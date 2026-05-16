@@ -76,32 +76,42 @@ export default function Dashboard({ data, onReset }) {
       {wtf_analysis.functions.length > 0 && (
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
           <h2 className="text-sm font-medium text-white pb-2 mb-3 border-b border-gray-800">
-            All functions
-          </h2>
-          <div className="flex flex-col gap-2">
-            {wtf_analysis.functions.map(fn => (
-              <div key={fn.name} className="flex flex-col gap-1 p-3 bg-gray-950 rounded-lg">
-                <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs text-gray-200">{fn.name}()</span>
-                  <span className={`text-xs font-medium ${
-                    fn.wtf_score >= 70 ? "text-red-400" :
-                    fn.wtf_score >= 40 ? "text-amber-400" : "text-green-400"
-                  }`}>
-                    WTF: {fn.wtf_score}
-                  </span>
-                </div>
-                {fn.reasons.length > 0 && (
-                  <ul className="flex flex-col gap-0.5">
-                    {fn.reasons.map((r, i) => (
-                      <li key={i} className="text-xs text-gray-500">· {r}</li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            ))}
+      All functions
+    </h2>
+    <div className="flex flex-col gap-2">
+      {wtf_analysis.functions.map(fn => (
+        <div key={fn.name} className="flex flex-col gap-2 p-3 bg-gray-950 rounded-lg">
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-xs text-gray-200">{fn.name}()</span>
+            <span className={`text-xs font-medium ${
+              fn.wtf_score >= 70 ? "text-red-400" :
+              fn.wtf_score >= 40 ? "text-amber-400" : "text-green-400"
+            }`}>
+              WTF: {fn.wtf_score}
+            </span>
           </div>
+
+          {/* NLP Summary — the new part */}
+          {fn.summary && (
+            <p className="text-xs text-indigo-300 bg-indigo-950 border border-indigo-900
+                          rounded px-3 py-2 italic">
+              "{fn.summary}"
+            </p>
+          )}
+
+          {fn.reasons.length > 0 && (
+            <ul className="flex flex-col gap-0.5">
+              {fn.reasons.map((r, i) => (
+                <li key={i} className="text-xs text-gray-500">· {r}</li>
+              ))}
+            </ul>
+          )}
         </div>
-      )}
+      ))}
+    </div>
+  </div>
+)}
+    
     </div>
   )
 }

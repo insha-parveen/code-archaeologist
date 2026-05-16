@@ -2,6 +2,7 @@ from fastapi import APIRouter, UploadFile, File, HTTPException
 from app.services.ast_parser import parse_functions
 from app.services.wtf_scorer import score_file
 from app.services.fossil_detector import detect_fossils
+from app.services.intent_analyzer import analyze_intent
 
 router = APIRouter()
 
@@ -25,24 +26,31 @@ async def upload_file(file: UploadFile = File(...)):
     except UnicodeDecodeError:
         raise HTTPException(status_code=400, detail="File must be UTF-8 encoded.")
 
-    # Parse and score
     try:
-        functions = parse_functions(source_code)
-        fossils = detect_fossils(source_code)
+        functions   = parse_functions(source_code)
+        fossils     = detect_fossils(source_code)
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
 
     wtf = score_file(functions) if functions else {
-        "functions": [],
-        "top_cursed": [],
-        "average_wtf": 0,
-        "total_functions": 0
+        "functions": [], "top_cursed": [], "average_wtf": 0, "total_functions": 0
     }
+
+    # Get intent summaries for all functions
+    function_names = [f["name"] for f in functions]
+    intent_map = analyze_intent(source_code, function_names) if function_names else {}
+
+    # Attach the summary to each scored function
+    for fn in wtf["functions"]:
+        fn["summary"] = intent_map.get(fn["name"], "No summary available.")
+
+    for fn in wtf["top_cursed"]:
+        fn["summary"] = intent_map.get(fn["name"], "No summary available.")
 
     return {
         "filename": filename,
         "line_count": len(source_code.splitlines()),
-        "source_code": source_code,   # we'll need this on the frontend
+        "source_code": source_code,
         "fossils": fossils,
         "wtf_analysis": wtf,
     }
