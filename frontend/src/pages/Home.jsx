@@ -1,10 +1,11 @@
 import { useState } from "react"
+import Dashboard from "./Dashboard"
 
 export default function Home() {
-  const [file, setFile] = useState(null)
-  const [result, setResult] = useState(null)
+  const [file, setFile]       = useState(null)
+  const [result, setResult]   = useState(null)
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
+  const [error, setError]     = useState(null)
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0])
@@ -14,28 +15,22 @@ export default function Home() {
 
   const handleUpload = async () => {
     if (!file) return
-
     setLoading(true)
     setError(null)
 
-    // FormData is the browser's way of packaging a file for multipart/form-data
     const formData = new FormData()
     formData.append("file", file)
 
     try {
-      const response = await fetch("http://localhost:8000/api/upload", {
+      const res = await fetch("http://localhost:8000/api/upload", {
         method: "POST",
         body: formData,
-        // Note: do NOT set Content-Type header manually — browser sets it automatically
-        // with the correct boundary for multipart/form-data
       })
-
-      if (!response.ok) {
-        const err = await response.json()
+      if (!res.ok) {
+        const err = await res.json()
         throw new Error(err.detail)
       }
-
-      const data = await response.json()
+      const data = await res.json()
       setResult(data)
     } catch (err) {
       setError(err.message)
@@ -44,41 +39,52 @@ export default function Home() {
     }
   }
 
-  return (
-    <div className="min-h-screen bg-gray-950 text-white flex flex-col items-center justify-center gap-6 p-8">
-      <h1 className="text-4xl font-bold">🕵️ Code Archaeologist</h1>
-      <p className="text-gray-400">Upload a Python file to begin excavation</p>
+  // Once we have results, show the dashboard
+  if (result) {
+    return <Dashboard data={result} onReset={() => setResult(null)} />
+  }
 
-      <div className="bg-gray-900 border border-gray-700 rounded-xl p-6 w-full max-w-lg flex flex-col gap-4">
-        <input
-          type="file"
-          accept=".py"
-          onChange={handleFileChange}
-          className="text-sm text-gray-300"
-        />
+  return (
+    <div className="min-h-screen bg-gray-950 flex flex-col items-center justify-center gap-6 p-8">
+      <div className="flex flex-col items-center gap-2">
+        <h1 className="text-4xl font-bold text-white">🕵️ Code Archaeologist</h1>
+        <p className="text-gray-400 text-sm">Upload a Python file to excavate its secrets</p>
+      </div>
+
+      <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 w-full max-w-md flex flex-col gap-4">
+        <label className="flex flex-col gap-2">
+          <span className="text-xs text-gray-500 uppercase tracking-widest">Select file</span>
+          <input
+            type="file"
+            accept=".py"
+            onChange={handleFileChange}
+            className="text-sm text-gray-300 file:mr-3 file:py-1 file:px-3
+                       file:rounded file:border-0 file:text-xs
+                       file:bg-gray-800 file:text-gray-300
+                       hover:file:bg-gray-700 cursor-pointer"
+          />
+        </label>
+
+        {file && (
+          <p className="text-xs text-gray-500">
+            {file.name} · {(file.size / 1024).toFixed(1)} KB
+          </p>
+        )}
 
         <button
           onClick={handleUpload}
           disabled={!file || loading}
-          className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed
-                     text-white font-semibold py-2 px-4 rounded-lg transition"
+          className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40
+                     disabled:cursor-not-allowed text-white text-sm font-medium
+                     py-2 px-4 rounded-lg transition-colors"
         >
-          {loading ? "Analyzing..." : "Upload & Analyze"}
+          {loading ? "Excavating..." : "Analyze File"}
         </button>
 
         {error && (
-          <p className="text-red-400 text-sm">{error}</p>
-        )}
-
-        {result && (
-          <div className="bg-gray-800 rounded-lg p-4 text-sm flex flex-col gap-2">
-            <p><span className="text-gray-400">File:</span> {result.filename}</p>
-            <p><span className="text-gray-400">Size:</span> {result.size_bytes} bytes</p>
-            <p><span className="text-gray-400">Lines:</span> {result.line_count}</p>
-            <pre className="bg-gray-900 rounded p-3 text-xs text-green-400 overflow-auto max-h-40">
-              {result.preview}
-            </pre>
-          </div>
+          <p className="text-red-400 text-xs bg-red-950 border border-red-900 rounded p-2">
+            {error}
+          </p>
         )}
       </div>
     </div>
