@@ -1,20 +1,5 @@
 <div align="center">
 
-```
-   ██████╗ ██████╗ ██████╗ ███████╗     █████╗ ██████╗  ██████╗██╗  ██╗
-  ██╔════╝██╔═══██╗██╔══██╗██╔════╝    ██╔══██╗██╔══██╗██╔════╝██║  ██║
-  ██║     ██║   ██║██║  ██║█████╗      ███████║██████╔╝██║     ███████║
-  ██║     ██║   ██║██║  ██║██╔══╝      ██╔══██║██╔══██╗██║     ██╔══██║
-  ╚██████╗╚██████╔╝██████╔╝███████╗    ██║  ██║██║  ██║╚██████╗██║  ██║
-   ╚═════╝ ╚═════╝ ╚═════╝ ╚══════╝    ╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝
-
-  ░█████╗░██████╗░░█████╗░██╗░░██╗░█████╗░███████╗░█████╗░██╗░░░░░░█████╗░░██████╗░██╗░██████╗████████╗
-  ██╔══██╗██╔══██╗██╔══██╗██║░░██║██╔══██╗██╔════╝██╔══██╗██║░░░░░██╔══██╗██╔════╝░██║██╔════╝╚══██╔══╝
-  ███████║██████╔╝██║░░╚═╝███████║███████║█████╗░░██║░░██║██║░░░░░██║░░██║██║░░██╗░██║╚█████╗░░░░██║░░░
-  ██╔══██║██╔══██╗██║░░██╗██╔══██║██╔══██║██╔══╝░░██║░░██║██║░░░░░██║░░██║██║░░╚██╗██║░╚═══██╗░░░██║░░░
-  ██║░░██║██║░░██║╚█████╔╝██║░░██║██║░░██║███████╗╚█████╔╝███████╗╚█████╔╝╚██████╔╝██║██████╔╝░░░██║░░░
-```
-
 # 🕵️ Code Archaeologist
 
 **Excavate the mysteries buried in your codebase.**
@@ -80,7 +65,7 @@ Reconstructs the "chapters" of your codebase's development from comments, naming
 
 | Layer | Technology | Why |
 |---|---|---|
-| **Frontend** | React 18, Tailwind CSS, Framer Motion | Fast, modern, internship-relevant |
+| **Frontend** | React 18, Tailwind CSS, Framer Motion | Fast, modern|
 | **Backend** | FastAPI (Python 3.11+) | Async-ready, auto-docs at `/docs` |
 | **Code Parsing** | Python `ast`, `tree-sitter` | Native AST access without dependencies |
 | **NLP** | HuggingFace Transformers, spaCy | Pretrained models, no training required |
@@ -216,25 +201,6 @@ npm run dev
 | `radon` | Cyclomatic complexity + maintainability index |
 | `spaCy` | Entity extraction from comments and docstrings |
 | Python `ast` | Native abstract syntax tree parsing |
-
----
-
-## 🗺️ Roadmap
-
-- [x] Python file support
-- [x] WTF Score + Leaderboard
-- [x] Fossil Detection (dead code)
-- [x] FastAPI backend + React frontend scaffold
-- [ ] Intent Analyzer (NLP summaries)
-- [ ] Complexity Heatmap visualization
-- [ ] Code Story Timeline
-- [ ] JavaScript / TypeScript support
-- [ ] GitHub repository URL input (no manual upload needed)
-- [ ] Exportable PDF report
-- [ ] VS Code extension
-- [ ] Multi-language support (Java, Go)
-
----
 
 ## 🤝 Contributing
 
