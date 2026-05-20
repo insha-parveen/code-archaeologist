@@ -35,10 +35,13 @@ Code Archaeologist is a full-stack tool that does the detective work for you. Up
 ## ✨ Features
 
 ### 🦕 Fossil Detector
+
 Identifies dead code artifacts left behind over time — functions declared but never called, variables assigned but never used, commented-out blocks, and unreachable branches.
 
 ### 😵 WTF Score
+
 Every file and function gets a **WTF Score (0–100)** based on objective complexity metrics:
+
 - Cryptic variable names (`x`, `tmp2`, `asdf`)
 - Deep nesting levels (3+ = 🚩)
 - Magic numbers with no explanation
@@ -47,6 +50,7 @@ Every file and function gets a **WTF Score (0–100)** based on objective comple
 A **"Top 5 Most Cursed Functions"** leaderboard is generated per upload.
 
 ### 🧠 Intent Analyzer
+
 Uses NLP to infer what a developer *meant* to write — even when the code is unclear. Powered by `Salesforce/codet5-base-codsum`.
 
 ```
@@ -54,24 +58,26 @@ calc_x(a, b)  →  "Appears to be an incomplete price discount calculator"
 ```
 
 ### 🗺️ Complexity Heatmap
+
 Color-coded from 🟢 green (clean) to 🔴 red (complex). Drill into any file or function with animated reveal via Framer Motion.
 
 ### 📜 Code Story Timeline
+
 Reconstructs the "chapters" of your codebase's development from comments, naming patterns, and logic flow. Detects signs of panic-driven development — e.g., files named `fix_FINAL_v2_REAL.py`.
 
 ---
 
 ## 🛠️ Tech Stack
 
-| Layer | Technology | Why |
-|---|---|---|
-| **Frontend** | React 18, Tailwind CSS, Framer Motion | Fast, modern|
-| **Backend** | FastAPI (Python 3.11+) | Async-ready, auto-docs at `/docs` |
-| **Code Parsing** | Python `ast`, `tree-sitter` | Native AST access without dependencies |
-| **NLP** | HuggingFace Transformers, spaCy | Pretrained models, no training required |
-| **Metrics** | `radon` | Industry-standard cyclomatic complexity |
-| **Visualization** | Recharts, D3.js | Flexible charting for heatmaps |
-| **Testing** | Pytest (backend), Vitest (frontend) | Standard in production codebases |
+| Layer                   | Technology                            | Why                                     |
+| ----------------------- | ------------------------------------- | --------------------------------------- |
+| **Frontend**      | React 18, Tailwind CSS, Framer Motion | Fast, modern                            |
+| **Backend**       | FastAPI (Python 3.11+)                | Async-ready, auto-docs at `/docs`     |
+| **Code Parsing**  | Python `ast`, `tree-sitter`       | Native AST access without dependencies  |
+| **NLP**           | HuggingFace Transformers, spaCy       | Pretrained models, no training required |
+| **Metrics**       | `radon`                             | Industry-standard cyclomatic complexity |
+| **Visualization** | Recharts, D3.js                       | Flexible charting for heatmaps          |
+| **Testing**       | Pytest (backend), Vitest (frontend)   | Standard in production codebases        |
 
 ---
 
@@ -118,12 +124,12 @@ code-archaeologist/
 
 ### Prerequisites
 
-| Tool | Version |
-|---|---|
-| Python | 3.11+ |
-| Node.js | 18+ |
-| pip | latest |
-| git | any |
+| Tool    | Version |
+| ------- | ------- |
+| Python  | 3.11+   |
+| Node.js | 18+     |
+| pip     | latest  |
+| git     | any     |
 
 ### 1. Clone the Repository
 
@@ -167,12 +173,12 @@ npm run dev
 
 ## 📡 API Reference
 
-| Endpoint | Method | Description |
-|---|---|---|
-| `/` | `GET` | Health check |
-| `/api/upload` | `POST` | Upload one or more `.py` files |
-| `/api/analysis/{session_id}` | `GET` | Full analysis report for a session |
-| `/api/analysis/{session_id}/leaderboard` | `GET` | Top 5 Most Cursed Functions |
+| Endpoint                                   | Method   | Description                        |
+| ------------------------------------------ | -------- | ---------------------------------- |
+| `/`                                      | `GET`  | Health check                       |
+| `/api/upload`                            | `POST` | Upload one or more `.py` files   |
+| `/api/analysis/{session_id}`             | `GET`  | Full analysis report for a session |
+| `/api/analysis/{session_id}/leaderboard` | `GET`  | Top 5 Most Cursed Functions        |
 
 ---
 
@@ -195,12 +201,14 @@ npm run dev
 
 **Key models & libraries:**
 
-| Tool | Purpose |
-|---|---|
-| `Salesforce/codet5-base-codsum` | Code summarization for intent analysis |
-| `radon` | Cyclomatic complexity + maintainability index |
-| `spaCy` | Entity extraction from comments and docstrings |
-| Python `ast` | Native abstract syntax tree parsing |
+| Tool                              | Purpose                                        |
+| --------------------------------- | ---------------------------------------------- |
+| `Salesforce/codet5-base-codsum` | Code summarization for intent analysis         |
+| `radon`                         | Cyclomatic complexity + maintainability index  |
+| `spaCy`                         | Entity extraction from comments and docstrings |
+| Python `ast`                    | Native abstract syntax tree parsing            |
+
+---
 
 ## 🤝 Contributing
 
@@ -216,12 +224,12 @@ git push origin feature/your-feature-name
 
 Please follow [Conventional Commits](https://www.conventionalcommits.org/) for commit messages:
 
-| Prefix | When to use |
-|---|---|
-| `feat:` | New feature |
-| `fix:` | Bug fix |
-| `chore:` | Setup, config, tooling |
-| `docs:` | Documentation only |
+| Prefix        | When to use                             |
+| ------------- | --------------------------------------- |
+| `feat:`     | New feature                             |
+| `fix:`      | Bug fix                                 |
+| `chore:`    | Setup, config, tooling                  |
+| `docs:`     | Documentation only                      |
 | `refactor:` | Code restructuring, no behaviour change |
 
 ---
@@ -234,7 +242,7 @@ MIT License — see [LICENSE](LICENSE) for details.
 
 <div align="center">
 
-**Built by** [Insha Parveen](https://github.com/insha-parveen) 
+**Built by** [Insha Parveen](https://github.com/insha-parveen)
 *If this helped you, leave a ⭐ — it means a lot.*
 
 </div>

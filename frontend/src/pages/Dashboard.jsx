@@ -1,6 +1,6 @@
-import WTFLeaderboard from "../components/WTFLeaderboard"
+import CodeStoryTimeline from "../components/CodeStoryTimeline"
 import FossilDetector from "../components/FossilDetector"
-
+import WTFLeaderboard from "../components/WTFLeaderboard"
 export default function Dashboard({ data, onReset }) {
   const { filename, line_count, fossils, wtf_analysis } = data
 
@@ -71,6 +71,10 @@ export default function Dashboard({ data, onReset }) {
         <WTFLeaderboard functions={wtf_analysis.top_cursed} />
         <FossilDetector fossils={fossils} />
       </div>
+      {/* Code Story Timeline */}
+{data.story && (
+  <CodeStoryTimeline story={data.story} />
+)}
 
       {/* Function detail table */}
       {wtf_analysis.functions.length > 0 && (
@@ -111,7 +115,7 @@ export default function Dashboard({ data, onReset }) {
     </div>
   </div>
 )}
-    
+
     </div>
   )
 }
