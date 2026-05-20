@@ -3,6 +3,7 @@ from app.services.ast_parser import parse_functions
 from app.services.wtf_scorer import score_file
 from app.services.fossil_detector import detect_fossils
 from app.services.intent_analyzer import analyze_intent
+from app.services.story_generator import generate_story
 
 router = APIRouter()
 
@@ -27,8 +28,8 @@ async def upload_file(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail="File must be UTF-8 encoded.")
 
     try:
-        functions   = parse_functions(source_code)
-        fossils     = detect_fossils(source_code)
+        functions = parse_functions(source_code)
+        fossils   = detect_fossils(source_code)
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
 
@@ -36,16 +37,17 @@ async def upload_file(file: UploadFile = File(...)):
         "functions": [], "top_cursed": [], "average_wtf": 0, "total_functions": 0
     }
 
-    # Get intent summaries for all functions
+    # Intent summaries
     function_names = [f["name"] for f in functions]
     intent_map = analyze_intent(source_code, function_names) if function_names else {}
 
-    # Attach the summary to each scored function
     for fn in wtf["functions"]:
         fn["summary"] = intent_map.get(fn["name"], "No summary available.")
-
     for fn in wtf["top_cursed"]:
         fn["summary"] = intent_map.get(fn["name"], "No summary available.")
+
+    # Code story
+    story = generate_story(source_code, wtf, fossils)
 
     return {
         "filename": filename,
@@ -53,4 +55,5 @@ async def upload_file(file: UploadFile = File(...)):
         "source_code": source_code,
         "fossils": fossils,
         "wtf_analysis": wtf,
+        "story": story,
     }
