@@ -26,29 +26,36 @@ export default function FossilDetector({ fossils }) {
   if (all.length === 0) {
     return (
       <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
-        <h2 className="text-sm font-medium text-white mb-3">Fossils detected</h2>
+        <h2 className="text-sm font-medium text-white mb-3">
+          Fossils detected
+        </h2>
         <p className="text-green-400 text-xs">No dead code found. Clean file!</p>
       </div>
     )
   }
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 flex flex-col gap-3">
+    <div className="bg-gray-900 border border-gray-800 rounded-xl p-5
+                    flex flex-col gap-3">
       <h2 className="text-sm font-medium text-white pb-2 border-b border-gray-800">
         Fossils detected
       </h2>
 
       {all.map((item, i) => (
-        <div key={i} className="flex items-start gap-3 pb-2 border-b border-gray-800 last:border-0 last:pb-0">
+        <div key={i}
+             className="flex items-start gap-3 pb-2 border-b border-gray-800
+                        last:border-0 last:pb-0 anim-fade-left
+                        hover:bg-gray-800 rounded-lg px-1
+                        transition-colors duration-200"
+             style={{ animationDelay: `${400 + i * 100}ms` }}>
+
           <span className="text-base shrink-0 mt-0.5">{icon[item.kind]}</span>
 
           <div className="flex flex-col gap-0.5 flex-1 min-w-0">
             <span className="font-mono text-xs text-gray-200 truncate">
               {item.name || item.content}
             </span>
-            <span className="text-xs text-gray-500">
-              line {item.line}
-            </span>
+            <span className="text-xs text-gray-500">line {item.line}</span>
           </div>
 
           <span className={`text-xs px-2 py-0.5 rounded shrink-0 ${tagStyle[item.kind]}`}>
