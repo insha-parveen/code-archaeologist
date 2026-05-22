@@ -39,34 +39,48 @@ export default function Home() {
     }
   }
 
-  // Once we have results, show the dashboard
   if (result) {
     return <Dashboard data={result} onReset={() => setResult(null)} />
   }
 
   return (
     <div className="min-h-screen bg-gray-950 flex flex-col items-center justify-center gap-6 p-8">
-      <div className="flex flex-col items-center gap-2">
-        <h1 className="text-4xl font-bold text-white">🕵️ Code Archaeologist</h1>
-        <p className="text-gray-400 text-sm">Upload a Python file to excavate its secrets</p>
+
+      {/* Title — slides down */}
+      <div className="flex flex-col items-center gap-2 anim-fade-down">
+        <h1 className="text-5xl font-bold text-white tracking-tight">
+          🕵️ Code Archaeologist
+        </h1>
+        <p className="text-gray-400 text-sm">
+          Upload a Python file to excavate its secrets
+        </p>
       </div>
 
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 w-full max-w-md flex flex-col gap-4">
+      {/* Upload card — scales in with delay */}
+      <div className="bg-gray-900 border border-gray-800 rounded-xl p-6
+                      w-full max-w-md flex flex-col gap-4
+                      anim-scale-in delay-200">
+
         <label className="flex flex-col gap-2">
-          <span className="text-xs text-gray-500 uppercase tracking-widest">Select file</span>
+          <span className="text-xs text-gray-500 uppercase tracking-widest">
+            Select file
+          </span>
           <input
             type="file"
             accept=".py"
             onChange={handleFileChange}
-            className="text-sm text-gray-300 file:mr-3 file:py-1 file:px-3
+            className="text-sm text-gray-300
+                       file:mr-3 file:py-1 file:px-3
                        file:rounded file:border-0 file:text-xs
                        file:bg-gray-800 file:text-gray-300
-                       hover:file:bg-gray-700 cursor-pointer"
+                       hover:file:bg-gray-700 cursor-pointer
+                       transition-all duration-200"
           />
         </label>
 
+        {/* File info — fades in when file selected */}
         {file && (
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-gray-500 anim-fade-in">
             {file.name} · {(file.size / 1024).toFixed(1)} KB
           </p>
         )}
@@ -74,15 +88,28 @@ export default function Home() {
         <button
           onClick={handleUpload}
           disabled={!file || loading}
-          className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40
-                     disabled:cursor-not-allowed text-white text-sm font-medium
-                     py-2 px-4 rounded-lg transition-colors"
+          className={`text-white text-sm font-medium py-2.5 px-4 rounded-lg
+                      transition-all duration-200
+                      disabled:opacity-40 disabled:cursor-not-allowed
+                      ${loading
+                        ? "bg-indigo-700 anim-pulse-glow"
+                        : "bg-indigo-600 hover:bg-indigo-500 hover:scale-[1.02] active:scale-[0.98]"
+                      }`}
         >
-          {loading ? "Excavating..." : "Analyze File"}
+          {loading ? (
+            <span className="flex items-center justify-center gap-2">
+              <span className="inline-block w-3.5 h-3.5 border-2 border-white
+                               border-t-transparent rounded-full animate-spin" />
+              Excavating...
+            </span>
+          ) : (
+            "Analyze File"
+          )}
         </button>
 
         {error && (
-          <p className="text-red-400 text-xs bg-red-950 border border-red-900 rounded p-2">
+          <p className="text-red-400 text-xs bg-red-950 border border-red-900
+                        rounded p-2 anim-fade-up">
             {error}
           </p>
         )}
