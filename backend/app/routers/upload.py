@@ -3,7 +3,11 @@ from app.services.ast_parser import parse_functions
 from app.services.wtf_scorer import score_file
 from app.services.fossil_detector import detect_fossils
 from app.services.story_generator import generate_story
-from app.services.llm_analyzer import analyze_all_functions, generate_code_story
+from app.services.llm_analyzer import (
+    analyze_all_functions,
+    generate_code_story,
+    LLMServiceError,
+)
 
 router = APIRouter()
 
@@ -50,7 +54,13 @@ async def upload_file(file: UploadFile = File(...)):
     }
 
     # LLM analysis — replaces rule-based intent analyzer
-    llm_results = analyze_all_functions(source_code, wtf["functions"])
+    try:
+        llm_results = analyze_all_functions(source_code, wtf["functions"])
+    except LLMServiceError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail=f"LLM analysis unavailable: {exc}"
+        )
 
     # Attach LLM results to each function
     for fn in wtf["functions"]:
@@ -64,7 +74,10 @@ async def upload_file(file: UploadFile = File(...)):
         fn["refactoring"] = result.get("refactoring", None)
 
     # LLM-generated story narrative
-    llm_narrative = generate_code_story(filename, wtf, fossils)
+    try:
+        llm_narrative = generate_code_story(filename, wtf, fossils)
+    except LLMServiceError:
+        llm_narrative = None
 
     # Get rule-based story for chapters and style
     # We keep the chapters — only replace the narrative text

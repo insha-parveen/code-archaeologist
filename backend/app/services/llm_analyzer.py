@@ -1,46 +1,90 @@
+import logging
 import os
-from groq import Groq
+import time
+from groq import (
+    Groq,
+    APIError,
+    APITimeoutError,
+    APIConnectionError,
+    RateLimitError,
+    GroqError,
+)
 from dotenv import load_dotenv
 
 load_dotenv()
 
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
+if not GROQ_API_KEY:
+    raise RuntimeError(
+        "Missing required environment variable GROQ_API_KEY for Groq API access. "
+        "Set GROQ_API_KEY in your environment or .env file."
+    )
+
+DEFAULT_GROQ_TIMEOUT = 10.0
+DEFAULT_GROQ_ATTEMPTS = 3
+DEFAULT_BACKOFF_SECONDS = 1.0
+
+logger = logging.getLogger(__name__)
+
 client = Groq(
-    api_key=os.environ.get("GROQ_API_KEY")
+    api_key=GROQ_API_KEY,
+    timeout=DEFAULT_GROQ_TIMEOUT,
+    max_retries=0,
 )
 
 MODEL = "llama-3.1-8b-instant"
 
 
-def _call_llm(prompt: str, max_tokens: int = 200) -> str | None:
+class LLMServiceError(Exception):
+    """Raised when the Groq LLM cannot produce a valid analysis."""
+
+
+def _call_llm(prompt: str, max_tokens: int = 200) -> str:
     """
     Core LLM call — single responsibility function.
     All other functions in this service use this.
     If Groq changes their API or we switch providers,
     we change ONE function, not ten. DRY principle.
     """
-    try:
-        response = client.chat.completions.create(
-            model=MODEL,
-            messages=[
-                {
-                    "role": "system",
-                    "content": "You are an expert software engineer "
-                               "specializing in code analysis and review. "
-                               "Be concise, precise, and insightful."
-                },
-                {
-                    "role": "user",
-                    "content": prompt
-                }
-            ],
-            max_tokens=max_tokens,
-            temperature=0.3,
-        )
-        return response.choices[0].message.content.strip()
+    for attempt in range(1, DEFAULT_GROQ_ATTEMPTS + 1):
+        try:
+            response = client.chat.completions.create(
+                model=MODEL,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are an expert software engineer "
+                                   "specializing in code analysis and review. "
+                                   "Be concise, precise, and insightful."
+                    },
+                    {
+                        "role": "user",
+                        "content": prompt
+                    }
+                ],
+                max_tokens=max_tokens,
+                temperature=0.3,
+            )
+            text = response.choices[0].message.content.strip()
+            if not text:
+                raise LLMServiceError("LLM returned an empty response.")
+            return text
 
-    except Exception as e:
-        print(f"LLM call failed: {e}")
-        return None
+        except (APITimeoutError, APIConnectionError, RateLimitError, GroqError, APIError) as e:
+            logger.error(
+                "Groq LLM request failed on attempt %d/%d: %s",
+                attempt,
+                DEFAULT_GROQ_ATTEMPTS,
+                e,
+                exc_info=True,
+            )
+            if attempt == DEFAULT_GROQ_ATTEMPTS:
+                raise LLMServiceError("Groq LLM service unavailable.") from e
+            time.sleep(DEFAULT_BACKOFF_SECONDS * attempt)
+
+        except Exception as e:
+            logger.exception("Unexpected error during Groq LLM request.")
+            raise LLMServiceError("Unexpected LLM service failure.") from e
 
 
 def analyze_function_intent(func_name: str, source_code: str) -> str:
