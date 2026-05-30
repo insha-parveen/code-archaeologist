@@ -46,14 +46,11 @@ export default function Dashboard({ data, onReset }) {
     : "text-green-400"
 
   return (
-    // ← CHANGE 1: outer wrapper gives galaxy a fixed canvas to sit in
     <div style={{ position: "relative", minHeight: "100vh",
                   background: "#030712", overflow: "hidden" }}>
 
-      {/* ← CHANGE 2: galaxy renders behind everything */}
       <GalaxyBackground />
 
-      {/* All existing dashboard content — zIndex 1 keeps it above galaxy */}
       <div style={{ position: "relative", zIndex: 1 }}
            className="min-h-screen p-6 flex flex-col gap-5 max-w-4xl mx-auto">
 
@@ -142,7 +139,7 @@ export default function Dashboard({ data, onReset }) {
           </div>
         )}
 
-        {/* All functions */}
+        {/* All functions — with LLM summaries and refactoring suggestions */}
         {wtf_analysis.functions.length > 0 && (
           <div className="bg-gray-900 bg-opacity-80 border border-gray-800
                           rounded-xl p-5 anim-fade-up delay-600"
@@ -158,6 +155,8 @@ export default function Dashboard({ data, onReset }) {
                                 anim-fade-left hover:bg-gray-900
                                 transition-colors duration-200"
                      style={{ animationDelay: `${600 + i * 80}ms` }}>
+
+                  {/* Function name + WTF score */}
                   <div className="flex items-center justify-between">
                     <span className="font-mono text-xs text-gray-200">
                       {fn.name}()
@@ -170,6 +169,7 @@ export default function Dashboard({ data, onReset }) {
                     </span>
                   </div>
 
+                  {/* LLM Intent Summary */}
                   {fn.summary && (
                     <p className="text-xs text-indigo-300 bg-indigo-950
                                   border border-indigo-900 rounded px-3 py-2 italic">
@@ -177,6 +177,18 @@ export default function Dashboard({ data, onReset }) {
                     </p>
                   )}
 
+                  {/* LLM Refactoring Suggestion — only appears for high WTF */}
+                  {fn.refactoring && (
+                    <div className="flex gap-2 bg-amber-950 border border-amber-900
+                                    rounded px-3 py-2">
+                      <span className="text-amber-400 shrink-0 text-sm">💡</span>
+                      <p className="text-xs text-amber-300 leading-relaxed">
+                        {fn.refactoring}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* WTF reasons */}
                   {fn.reasons.length > 0 && (
                     <ul className="flex flex-col gap-0.5">
                       {fn.reasons.map((r, j) => (
@@ -184,6 +196,7 @@ export default function Dashboard({ data, onReset }) {
                       ))}
                     </ul>
                   )}
+
                 </div>
               ))}
             </div>
