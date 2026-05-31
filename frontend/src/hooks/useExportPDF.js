@@ -6,6 +6,8 @@ export function useExportPDF() {
 
   const exportPDF = async (data, filename = "code-analysis.pdf") => {
     setExporting(true)
+    // yield to the event loop so the UI (loading state) can render
+    await Promise.resolve()
 
     try {
       const pdf = new jsPDF({
@@ -25,6 +27,9 @@ export function useExportPDF() {
       const newPageIfNeeded = (neededHeight = 10) => {
         if (y + neededHeight > pageHeight - margin) {
           pdf.addPage()
+          // draw full-page background immediately after creating a page
+          pdf.setFillColor(3, 7, 18)
+          pdf.rect(0, 0, pageWidth, pageHeight, "F")
           y = margin
         }
       }
@@ -236,8 +241,6 @@ export function useExportPDF() {
       const totalPages = pdf.getNumberOfPages()
       for (let i = 1; i <= totalPages; i++) {
         pdf.setPage(i)
-        pdf.setFillColor(3, 7, 18)
-        pdf.rect(0, 0, pageWidth, pageHeight, "F")  // re-apply bg
         pdf.setFontSize(7)
         pdf.setTextColor("#374151")
         pdf.text(
