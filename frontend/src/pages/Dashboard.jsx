@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import CodeStoryTimeline from "../components/CodeStoryTimeline"
+import ExportButton from "../components/ExportButton"
 import FossilDetector from "../components/FossilDetector"
 import GalaxyBackground from "../components/GalaxyBackground"
 import WTFLeaderboard from "../components/WTFLeaderboard"
@@ -51,7 +52,9 @@ export default function Dashboard({ data, onReset }) {
 
       <GalaxyBackground />
 
-      <div style={{ position: "relative", zIndex: 1 }}
+      {/* ← id added here so html2canvas knows what to capture */}
+      <div id="dashboard-content"
+           style={{ position: "relative", zIndex: 1 }}
            className="min-h-screen p-6 flex flex-col gap-5 max-w-4xl mx-auto">
 
         {/* Top bar */}
@@ -64,15 +67,20 @@ export default function Dashboard({ data, onReset }) {
               {filename} · {line_count} lines
             </p>
           </div>
-          <button
-            onClick={onReset}
-            className="text-xs text-gray-400 border border-gray-700
-                       hover:border-gray-500 hover:text-white
-                       px-3 py-1.5 rounded-lg transition-all duration-200
-                       hover:scale-[1.03] active:scale-[0.97]"
-          >
-            Upload another
-          </button>
+
+          {/* ← Action buttons — ExportButton added here */}
+          <div className="flex items-center gap-2">
+            <ExportButton filename={filename} data={data} />
+            <button
+              onClick={onReset}
+              className="text-xs text-gray-400 border border-gray-700
+                         hover:border-gray-500 hover:text-white
+                         px-3 py-1.5 rounded-lg transition-all duration-200
+                         hover:scale-[1.03] active:scale-[0.97]"
+            >
+              Upload another
+            </button>
+          </div>
         </div>
 
         {/* Summary cards */}
