@@ -5,7 +5,6 @@ import FossilDetector from "../components/FossilDetector"
 import GalaxyBackground from "../components/GalaxyBackground"
 import WTFLeaderboard from "../components/WTFLeaderboard"
 
-// Animated number that counts up from 0
 function CountUp({ value }) {
   const [display, setDisplay] = useState(0)
 
@@ -52,7 +51,6 @@ export default function Dashboard({ data, onReset }) {
 
       <GalaxyBackground />
 
-      {/* ← id added here so html2canvas knows what to capture */}
       <div id="dashboard-content"
            style={{ position: "relative", zIndex: 1 }}
            className="min-h-screen p-6 flex flex-col gap-5 max-w-4xl mx-auto">
@@ -63,12 +61,42 @@ export default function Dashboard({ data, onReset }) {
             <h1 className="text-white font-medium text-lg">
               🕵️ Code Archaeologist
             </h1>
-            <p className="text-gray-500 text-xs">
-              {filename} · {line_count} lines
-            </p>
+
+            {/* File info + language + truncation warning */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <p className="text-gray-500 text-xs">
+                {filename} · {line_count} lines
+              </p>
+
+              {/* Language badge */}
+              {data.language && (
+                <span className="text-xs px-2 py-0.5 rounded-full
+                                 bg-gray-800 text-gray-400
+                                 border border-gray-700">
+                  {data.language}
+                </span>
+              )}
+
+              {/* Truncation notice for large GitHub files */}
+              {data.truncated && (
+                <span className="text-xs text-amber-400 bg-amber-950
+                                 border border-amber-900 rounded
+                                 px-2 py-0.5">
+                  ⚠ Analyzed first {data.analyzed_lines} lines
+                </span>
+              )}
+
+              {/* GitHub source badge */}
+              {data.github_path && (
+                <span className="text-xs text-indigo-400 bg-indigo-950
+                                 border border-indigo-900 rounded
+                                 px-2 py-0.5">
+                  🐙 GitHub
+                </span>
+              )}
+            </div>
           </div>
 
-          {/* ← Action buttons — ExportButton added here */}
           <div className="flex items-center gap-2">
             <ExportButton filename={filename} data={data} />
             <button
@@ -147,15 +175,21 @@ export default function Dashboard({ data, onReset }) {
           </div>
         )}
 
-        {/* All functions — with LLM summaries and refactoring suggestions */}
+        {/* All functions */}
         {wtf_analysis.functions.length > 0 && (
           <div className="bg-gray-900 bg-opacity-80 border border-gray-800
                           rounded-xl p-5 anim-fade-up delay-600"
                style={{ backdropFilter: "blur(10px)" }}>
-            <h2 className="text-sm font-medium text-white pb-2 mb-3
-                           border-b border-gray-800">
-              All functions
-            </h2>
+            <div className="flex items-center justify-between pb-2 mb-3
+                            border-b border-gray-800">
+              <h2 className="text-sm font-medium text-white">
+                All functions
+              </h2>
+              <span className="text-xs text-gray-600">
+                {wtf_analysis.functions.length} total
+              </span>
+            </div>
+
             <div className="flex flex-col gap-2">
               {wtf_analysis.functions.map((fn, i) => (
                 <div key={fn.name}
@@ -178,18 +212,21 @@ export default function Dashboard({ data, onReset }) {
                   </div>
 
                   {/* LLM Intent Summary */}
-                  {fn.summary && (
+                  {fn.summary && fn.summary !== "No summary available." && (
                     <p className="text-xs text-indigo-300 bg-indigo-950
-                                  border border-indigo-900 rounded px-3 py-2 italic">
+                                  border border-indigo-900 rounded
+                                  px-3 py-2 italic">
                       "{fn.summary}"
                     </p>
                   )}
 
-                  {/* LLM Refactoring Suggestion — only appears for high WTF */}
+                  {/* LLM Refactoring Suggestion */}
                   {fn.refactoring && (
-                    <div className="flex gap-2 bg-amber-950 border border-amber-900
-                                    rounded px-3 py-2">
-                      <span className="text-amber-400 shrink-0 text-sm">💡</span>
+                    <div className="flex gap-2 bg-amber-950 border
+                                    border-amber-900 rounded px-3 py-2">
+                      <span className="text-amber-400 shrink-0 text-sm">
+                        💡
+                      </span>
                       <p className="text-xs text-amber-300 leading-relaxed">
                         {fn.refactoring}
                       </p>
@@ -197,10 +234,12 @@ export default function Dashboard({ data, onReset }) {
                   )}
 
                   {/* WTF reasons */}
-                  {fn.reasons.length > 0 && (
+                  {fn.reasons && fn.reasons.length > 0 && (
                     <ul className="flex flex-col gap-0.5">
                       {fn.reasons.map((r, j) => (
-                        <li key={j} className="text-xs text-gray-500">· {r}</li>
+                        <li key={j} className="text-xs text-gray-500">
+                          · {r}
+                        </li>
                       ))}
                     </ul>
                   )}
@@ -208,6 +247,20 @@ export default function Dashboard({ data, onReset }) {
                 </div>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* No functions found state */}
+        {wtf_analysis.functions.length === 0 && (
+          <div className="bg-gray-900 bg-opacity-80 border border-gray-800
+                          rounded-xl p-8 text-center anim-fade-up delay-600">
+            <p className="text-gray-500 text-sm">
+              No functions detected in this file.
+            </p>
+            <p className="text-gray-600 text-xs mt-1">
+              The file may be a configuration file, data file, or
+              contain only top-level code.
+            </p>
           </div>
         )}
 
