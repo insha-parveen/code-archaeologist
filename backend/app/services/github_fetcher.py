@@ -262,7 +262,9 @@ def fetch_repo_files(owner: str, repo: str,
         item for item in all_items
         if item["type"] == "blob"
         and _is_supported(item["path"])
-        and (not folder or item["path"].startswith(folder))
+        and (not folder or
+             item["path"] == folder or
+             item["path"].startswith(folder.rstrip("/") + "/"))
         and item.get("size", 0) <= MAX_FILE_SIZE
     ]
 

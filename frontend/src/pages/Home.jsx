@@ -1,5 +1,6 @@
 import { useState } from "react"
 import GalaxyBackground from "../components/GalaxyBackground"
+import API_BASE from "../config"
 import Dashboard from "./Dashboard"
 import MultiResults from "./MultiResults"
 
@@ -25,13 +26,18 @@ export default function Home() {
     const formData = new FormData()
     formData.append("file", file)
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/upload", {
+      const res = await fetch(`${API_BASE}/api/upload`, {   // ← FIXED: was /api/github
         method: "POST",
         body: formData,
       })
       if (!res.ok) {
         const err = await res.json()
-        throw new Error(err.detail)
+        const message = typeof err.detail === "string"
+          ? err.detail
+          : Array.isArray(err.detail)
+          ? err.detail.map(e => e.msg).join(", ")
+          : "Upload failed. Check the file and try again."
+        throw new Error(message)
       }
       setResult(await res.json())
     } catch (err) {
@@ -46,14 +52,19 @@ export default function Home() {
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/github", {
+      const res = await fetch(`${API_BASE}/api/github`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url: githubUrl.trim() }),
       })
       if (!res.ok) {
         const err = await res.json()
-        throw new Error(err.detail)
+        const message = typeof err.detail === "string"
+          ? err.detail
+          : Array.isArray(err.detail)
+          ? err.detail.map(e => e.msg).join(", ")
+          : "GitHub fetch failed. Check the URL and try again."
+        throw new Error(message)
       }
       const data = await res.json()
       if (data.results.length === 1) {
@@ -140,7 +151,6 @@ export default function Home() {
              style={{ backdropFilter: "blur(12px)" }}>
 
           {mode === "upload" ? (
-            /* ── Upload mode ── */
             <>
               <label className="flex flex-col gap-2">
                 <span className="text-xs text-gray-500 uppercase tracking-widest">
@@ -173,8 +183,7 @@ export default function Home() {
                   {file.size > 50 * 1024 && (
                     <p className="text-xs text-amber-400 bg-amber-950
                                   border border-amber-900 rounded px-2 py-1">
-                      ⚠ Large file — analysis may use chunking and
-                      take longer
+                      ⚠ Large file — analysis may use chunking and take longer
                     </p>
                   )}
                 </div>
@@ -204,7 +213,6 @@ export default function Home() {
               </button>
             </>
           ) : (
-            /* ── GitHub mode ── */
             <>
               <label className="flex flex-col gap-2">
                 <span className="text-xs text-gray-500 uppercase tracking-widest">
@@ -223,7 +231,6 @@ export default function Home() {
                 />
               </label>
 
-              {/* Examples */}
               <div className="flex flex-col gap-1.5 bg-gray-800
                               rounded-lg px-3 py-2">
                 <p className="text-xs text-gray-500 font-medium">
