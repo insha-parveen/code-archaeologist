@@ -8,10 +8,16 @@ from app.services.llm_analyzer import (
     generate_code_story,
     LLMServiceError,
 )
-
+from app.services.universal_parser import (
+    parse_functions_universal,
+    detect_fossils_universal,
+)
+from app.services.language_detector import (
+    get_language, is_python, is_supported, SUPPORTED_EXTENSIONS
+)
 router = APIRouter()
 
-ALLOWED_EXTENSIONS = {".py"}
+ALLOWED_EXTENSIONS = SUPPORTED_EXTENSIONS
 MAX_FILE_SIZE = 1 * 1024 * 1024
 
 
@@ -19,10 +25,11 @@ MAX_FILE_SIZE = 1 * 1024 * 1024
 async def upload_file(file: UploadFile = File(...)):
     filename = file.filename
 
-    if not any(filename.endswith(ext) for ext in ALLOWED_EXTENSIONS):
+    if not is_supported(filename):
         raise HTTPException(
             status_code=400,
-            detail="Only .py files are supported."
+            detail=f"Unsupported file type. Supported: "
+                   f"{', '.join(sorted(SUPPORTED_EXTENSIONS))}"
         )
 
     content_bytes = await file.read()
@@ -43,8 +50,13 @@ async def upload_file(file: UploadFile = File(...)):
 
     # Parse and score
     try:
-        functions = parse_functions(source_code)
-        fossils   = detect_fossils(source_code)
+        if is_python(filename):
+            functions = parse_functions(source_code)
+            fossils = detect_fossils(source_code)
+        else:
+            language  = get_language(filename)
+            functions = parse_functions_universal(source_code, language)
+            fossils   = detect_fossils_universal(source_code, language)
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
 
@@ -93,6 +105,7 @@ async def upload_file(file: UploadFile = File(...)):
         "filename":    filename,
         "line_count":  len(source_code.splitlines()),
         "source_code": source_code,
+        "language":    get_language(filename),
         "fossils":     fossils,
         "wtf_analysis": wtf,
         "story":       story,
