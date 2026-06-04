@@ -6,14 +6,9 @@ from app.services.llm_analyzer import _call_llm, LLMServiceError
 
 logger = logging.getLogger(__name__)
 
-MAX_CHARS_PER_CHUNK     = 6000
-MAX_FUNCTIONS_PER_BATCH = 5
-MAX_CHUNKS              = 5
-CHUNK_OVERLAP           = 200
-
-
-class ParserError(Exception):
-    pass
+MAX_CHARS_PER_CHUNK = 6000
+MAX_CHUNKS          = 5
+CHUNK_OVERLAP       = 200
 
 
 def parse_functions_universal(
@@ -42,9 +37,14 @@ def _parse_large_file(source_code: str, language: str) -> list[dict]:
     total_lines     = len(lines)
     functions       = []
     seen_names      = set()
+def _parse_large_file(source_code: str, language: str) -> list[dict]:
+    lines           = source_code.splitlines()
+    total_lines     = len(lines)
+    functions       = []
+    seen_names      = set()
     avg_chars       = max(1, len(source_code) // total_lines)
-    lines_per_chunk = MAX_CHARS_PER_CHUNK // avg_chars
-    overlap_lines   = CHUNK_OVERLAP // avg_chars
+    lines_per_chunk = max(1, MAX_CHARS_PER_CHUNK // avg_chars)
+    overlap_lines   = min(CHUNK_OVERLAP // avg_chars, max(0, lines_per_chunk - 1))
     chunk_num       = 0
     start_line      = 0
 
@@ -111,7 +111,8 @@ def _parse_chunk(
 
     except LLMServiceError as e:
         error_str = str(e).lower()
-        if "rate" in error_str and attempt <= 3:
+        rate_limit_pattern = r'\b(rate\s*limit|rate-limit|rate-limited|too\s+many\s+requests|quota|429)\b'
+        if re.search(rate_limit_pattern, error_str) and attempt <= 3:
             wait = 2 ** attempt
             logger.warning(
                 "Rate limit hit, waiting %ds (attempt %d/3)", wait, attempt
@@ -179,6 +180,22 @@ def _sanitize_function(item: dict, offset_lines: int = 0) -> dict | None:
     def safe_list(val) -> list:
         return val if isinstance(val, list) else []
 
+    def safe_numeric_list(val) -> list:
+        """Convert list elements to numeric types, filtering non-numeric entries."""
+        items = safe_list(val)
+        numeric = []
+        for item in items:
+            try:
+                # Try int first, fall back to float
+                numeric.append(int(item))
+            except (TypeError, ValueError):
+                try:
+                    numeric.append(float(item))
+                except (TypeError, ValueError):
+                    # Skip non-numeric entries
+                    pass
+        return numeric
+
     return {
         "name":          name.strip(),
         "line_start":    safe_int(item.get("line_start"), 1) + offset_lines,
@@ -187,7 +204,7 @@ def _sanitize_function(item: dict, offset_lines: int = 0) -> dict | None:
         "max_depth":     safe_int(item.get("max_depth")),
         "num_branches":  safe_int(item.get("num_branches")),
         "has_docstring": bool(item.get("has_docstring", False)),
-        "magic_numbers": safe_list(item.get("magic_numbers")),
+        "magic_numbers": safe_numeric_list(item.get("magic_numbers")),
         "bad_names":     [str(b) for b in safe_list(item.get("bad_names"))],
     }
 
@@ -217,12 +234,11 @@ def _regex_fallback(
 
     pattern = patterns.get(language)
     if not pattern:
-        pattern = r"(?:function|def|func|fn)\s+(\w+)\s*[(<(]"
+        pattern = r"(?:function|def|func|fn)\s+(\w+)\s*[(<]"
 
-    functions = []
-    lines     = source_code.splitlines()
-    seen      = set()
-
+    pattern = patterns.get(language)
+    if not pattern:
+        pattern = r"(?:function|def|func|fn)\s+(\w+)\s*[(<]"
     SKIP = {"if", "for", "while", "switch", "else",
             "try", "catch", "return", "new"}
 
@@ -234,10 +250,11 @@ def _regex_fallback(
             )
             if name and name not in SKIP and name not in seen:
                 seen.add(name)
+                chunk_end = offset_lines + len(lines)
                 functions.append({
                     "name":          name,
                     "line_start":    i + offset_lines,
-                    "line_end":      min(i + 20 + offset_lines, len(lines)),
+                    "line_end":      min(i + 20 + offset_lines, chunk_end),
                     "args":          [],
                     "max_depth":     0,
                     "num_branches":  0,

@@ -17,7 +17,6 @@ from app.services.language_detector import (
 )
 router = APIRouter()
 
-ALLOWED_EXTENSIONS = SUPPORTED_EXTENSIONS
 MAX_FILE_SIZE = 1 * 1024 * 1024
 
 
@@ -48,13 +47,14 @@ async def upload_file(file: UploadFile = File(...)):
             detail="File must be UTF-8 encoded."
         )
 
+    language = get_language(filename)
+
     # Parse and score
     try:
         if is_python(filename):
             functions = parse_functions(source_code)
             fossils = detect_fossils(source_code)
         else:
-            language  = get_language(filename)
             functions = parse_functions_universal(source_code, language)
             fossils   = detect_fossils_universal(source_code, language)
     except ValueError as e:
@@ -105,7 +105,7 @@ async def upload_file(file: UploadFile = File(...)):
         "filename":    filename,
         "line_count":  len(source_code.splitlines()),
         "source_code": source_code,
-        "language":    get_language(filename),
+        "language":    language,
         "fossils":     fossils,
         "wtf_analysis": wtf,
         "story":       story,
