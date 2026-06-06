@@ -37,14 +37,9 @@ def _parse_large_file(source_code: str, language: str) -> list[dict]:
     total_lines     = len(lines)
     functions       = []
     seen_names      = set()
-def _parse_large_file(source_code: str, language: str) -> list[dict]:
-    lines           = source_code.splitlines()
-    total_lines     = len(lines)
-    functions       = []
-    seen_names      = set()
     avg_chars       = max(1, len(source_code) // total_lines)
-    lines_per_chunk = max(1, MAX_CHARS_PER_CHUNK // avg_chars)
-    overlap_lines   = min(CHUNK_OVERLAP // avg_chars, max(0, lines_per_chunk - 1))
+    lines_per_chunk = MAX_CHARS_PER_CHUNK // avg_chars
+    overlap_lines   = CHUNK_OVERLAP // avg_chars
     chunk_num       = 0
     start_line      = 0
 
@@ -216,6 +211,10 @@ def _regex_fallback(
 ) -> list[dict]:
     logger.info("Using regex fallback parser for %s", language)
 
+    lines = source_code.splitlines()
+    functions = []
+    seen = set()
+
     patterns = {
         "Python":     r"^def\s+(\w+)\s*\(",
         "JavaScript": r"(?:^|\s)(?:async\s+)?function\s+(\w+)\s*\(|(?:const|let|var)\s+(\w+)\s*=\s*(?:async\s+)?(?:\w+|\([^)]*\))\s*=>",
@@ -236,9 +235,6 @@ def _regex_fallback(
     if not pattern:
         pattern = r"(?:function|def|func|fn)\s+(\w+)\s*[(<]"
 
-    pattern = patterns.get(language)
-    if not pattern:
-        pattern = r"(?:function|def|func|fn)\s+(\w+)\s*[(<]"
     SKIP = {"if", "for", "while", "switch", "else",
             "try", "catch", "return", "new"}
 
@@ -262,6 +258,8 @@ def _regex_fallback(
                     "magic_numbers": [],
                     "bad_names":     [],
                 })
+
+    return functions
 
     return functions
 
