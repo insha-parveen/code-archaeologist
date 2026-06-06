@@ -31,7 +31,9 @@ function CountUp({ value }) {
   return <span>{display}</span>
 }
 
-export default function Dashboard({ data, onReset }) {
+// onReset     = back to previous screen (file list or Home)
+// onResetAll  = back to Home (only passed when coming from MultiResults)
+export default function Dashboard({ data, onReset, onResetAll }) {
   const { filename, line_count, fossils, wtf_analysis } = data
 
   const avgScore     = wtf_analysis.average_wtf
@@ -61,14 +63,10 @@ export default function Dashboard({ data, onReset }) {
             <h1 className="text-white font-medium text-lg">
               🕵️ Code Archaeologist
             </h1>
-
-            {/* File info + language + truncation warning */}
             <div className="flex items-center gap-2 flex-wrap">
               <p className="text-gray-500 text-xs">
                 {filename} · {line_count} lines
               </p>
-
-              {/* Language badge */}
               {data.language && (
                 <span className="text-xs px-2 py-0.5 rounded-full
                                  bg-gray-800 text-gray-400
@@ -76,21 +74,15 @@ export default function Dashboard({ data, onReset }) {
                   {data.language}
                 </span>
               )}
-
-              {/* Truncation notice for large GitHub files */}
               {data.truncated && (
                 <span className="text-xs text-amber-400 bg-amber-950
-                                 border border-amber-900 rounded
-                                 px-2 py-0.5">
+                                 border border-amber-900 rounded px-2 py-0.5">
                   ⚠ Analyzed first {data.analyzed_lines} lines
                 </span>
               )}
-
-              {/* GitHub source badge */}
               {data.github_path && (
                 <span className="text-xs text-indigo-400 bg-indigo-950
-                                 border border-indigo-900 rounded
-                                 px-2 py-0.5">
+                                 border border-indigo-900 rounded px-2 py-0.5">
                   🐙 GitHub
                 </span>
               )}
@@ -99,14 +91,28 @@ export default function Dashboard({ data, onReset }) {
 
           <div className="flex items-center gap-2">
             <ExportButton filename={filename} data={data} />
+
+            {/* Back to file list — only when coming from MultiResults */}
+            {onResetAll && (
+              <button
+                onClick={onReset}
+                className="text-xs text-gray-400 border border-gray-700
+                           hover:border-indigo-500 hover:text-indigo-400
+                           px-3 py-1.5 rounded-lg transition-all duration-200"
+              >
+                ← Back to results
+              </button>
+            )}
+
+            {/* Primary action button */}
             <button
-              onClick={onReset}
+              onClick={onResetAll || onReset}
               className="text-xs text-gray-400 border border-gray-700
                          hover:border-gray-500 hover:text-white
                          px-3 py-1.5 rounded-lg transition-all duration-200
                          hover:scale-[1.03] active:scale-[0.97]"
             >
-              Upload another
+              {onResetAll ? "Analyze another" : "Upload another"}
             </button>
           </div>
         </div>
@@ -198,7 +204,6 @@ export default function Dashboard({ data, onReset }) {
                                 transition-colors duration-200"
                      style={{ animationDelay: `${600 + i * 80}ms` }}>
 
-                  {/* Function name + WTF score */}
                   <div className="flex items-center justify-between">
                     <span className="font-mono text-xs text-gray-200">
                       {fn.name}()
@@ -211,7 +216,6 @@ export default function Dashboard({ data, onReset }) {
                     </span>
                   </div>
 
-                  {/* LLM Intent Summary */}
                   {fn.summary && fn.summary !== "No summary available." && (
                     <p className="text-xs text-indigo-300 bg-indigo-950
                                   border border-indigo-900 rounded
@@ -220,26 +224,20 @@ export default function Dashboard({ data, onReset }) {
                     </p>
                   )}
 
-                  {/* LLM Refactoring Suggestion */}
                   {fn.refactoring && (
                     <div className="flex gap-2 bg-amber-950 border
                                     border-amber-900 rounded px-3 py-2">
-                      <span className="text-amber-400 shrink-0 text-sm">
-                        💡
-                      </span>
+                      <span className="text-amber-400 shrink-0 text-sm">💡</span>
                       <p className="text-xs text-amber-300 leading-relaxed">
                         {fn.refactoring}
                       </p>
                     </div>
                   )}
 
-                  {/* WTF reasons */}
                   {fn.reasons && fn.reasons.length > 0 && (
                     <ul className="flex flex-col gap-0.5">
                       {fn.reasons.map((r, j) => (
-                        <li key={j} className="text-xs text-gray-500">
-                          · {r}
-                        </li>
+                        <li key={j} className="text-xs text-gray-500">· {r}</li>
                       ))}
                     </ul>
                   )}
@@ -250,7 +248,6 @@ export default function Dashboard({ data, onReset }) {
           </div>
         )}
 
-        {/* No functions found state */}
         {wtf_analysis.functions.length === 0 && (
           <div className="bg-gray-900 bg-opacity-80 border border-gray-800
                           rounded-xl p-8 text-center anim-fade-up delay-600">

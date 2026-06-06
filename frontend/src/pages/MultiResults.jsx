@@ -5,11 +5,15 @@ import Dashboard from "./Dashboard"
 export default function MultiResults({ data, onReset }) {
   const [selected, setSelected] = useState(null)
 
+  // Back to file list — not all the way to Home
+  const handleBackToList = () => setSelected(null)
+
   if (selected !== null) {
     return (
       <Dashboard
         data={data.results[selected]}
-        onReset={() => setSelected(null)}
+        onReset={handleBackToList}   // ← back to file list
+        onResetAll={onReset}         // ← back to Home
       />
     )
   }
@@ -55,8 +59,8 @@ export default function MultiResults({ data, onReset }) {
         {/* File list */}
         <div className="flex flex-col gap-3">
           {data.results.map((result, i) => {
-            const avg     = result.wtf_analysis.average_wtf
-            const fossils = result.fossils.total_fossils
+            const avg        = result.wtf_analysis.average_wtf
+            const fossils    = result.fossils.total_fossils
             const scoreColor = avg >= 70
               ? "text-red-400" : avg >= 40
               ? "text-amber-400" : "text-green-400"
@@ -73,7 +77,7 @@ export default function MultiResults({ data, onReset }) {
                      animationDelay: `${i * 80}ms`
                    }}>
 
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between mb-3">
                   <div className="flex flex-col gap-0.5">
                     <span className="text-sm font-medium text-white">
                       {result.filename}
@@ -83,12 +87,13 @@ export default function MultiResults({ data, onReset }) {
                     </span>
                   </div>
                   <span className="text-xs text-indigo-400 border
-                                   border-indigo-800 px-2 py-0.5 rounded-full">
+                                   border-indigo-800 px-2 py-0.5
+                                   rounded-full shrink-0">
                     View →
                   </span>
                 </div>
 
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-6 flex-wrap">
                   <div className="flex flex-col gap-0.5">
                     <span className="text-xs text-gray-500">Avg WTF</span>
                     <span className={`text-lg font-medium ${scoreColor}`}>
@@ -116,14 +121,23 @@ export default function MultiResults({ data, onReset }) {
                       {result.line_count}
                     </span>
                   </div>
+                  {result.language && (
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-xs text-gray-500">Language</span>
+                      <span className="text-xs px-2 py-0.5 rounded-full
+                                       bg-gray-800 text-gray-300
+                                       border border-gray-700">
+                        {result.language}
+                      </span>
+                    </div>
+                  )}
                 </div>
-
               </div>
             )
           })}
         </div>
 
-        {/* Errors if any files failed */}
+        {/* Errors */}
         {data.errors?.length > 0 && (
           <div className="bg-red-950 border border-red-900
                           rounded-xl p-4 anim-fade-up">
