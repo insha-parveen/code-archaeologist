@@ -86,6 +86,12 @@ export default function Dashboard({ data, onReset, onResetAll }) {
                   🐙 GitHub
                 </span>
               )}
+              {data.cached && (
+                <span className="text-xs text-green-400 bg-green-950
+                                 border border-green-900 rounded px-2 py-0.5">
+                  ⚡ Cached
+                </span>
+              )}
             </div>
           </div>
 
