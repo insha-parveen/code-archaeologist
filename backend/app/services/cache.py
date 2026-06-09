@@ -22,7 +22,7 @@ class InMemoryCache:
 
     def __init__(self):
         # {key: {"value": ..., "expires_at": float}}
-        self._store: dict[str, dict] = {}
+        self._store: dict[str, dict[str, Any]] = {}
         self._hits   = 0
         self._misses = 0
         self._lock   = threading.Lock()  # Thread safety for concurrent access
@@ -54,7 +54,12 @@ class InMemoryCache:
         """
         Store a value with a TTL.
         Default TTL is 1 hour (3600 seconds).
+
+        ttl_seconds must be a positive integer.
         """
+        if ttl_seconds <= 0:
+            raise ValueError("ttl_seconds must be a positive integer")
+
         with self._lock:
             self._store[key] = {
                 "value":      value,
@@ -117,9 +122,11 @@ def make_file_cache_key(source_code: str) -> str:
     Generate a cache key for a complete file analysis.
     MD5 of the source code — same code = same key.
 
-    Why MD5? It's fast and collision-resistant enough for caching.
-    We're not using it for security — just identity.
+    Requires source_code to be a string.
     """
+    if not isinstance(source_code, str):
+        raise TypeError("source_code must be a str")
+
     return "file:" + hashlib.md5(
         source_code.encode("utf-8")
     ).hexdigest()
@@ -130,7 +137,14 @@ def make_function_cache_key(func_name: str, source_code: str) -> str:
     Generate a cache key for a single function's LLM analysis.
     Includes function name in key to avoid collisions between
     different functions with identical code.
+
+    Both func_name and source_code must be strings.
     """
+    if not isinstance(func_name, str):
+        raise TypeError("func_name must be a str")
+    if not isinstance(source_code, str):
+        raise TypeError("source_code must be a str")
+
     content = f"{func_name}:{source_code}"
     return "fn:" + hashlib.md5(
         content.encode("utf-8")
@@ -139,9 +153,11 @@ def make_function_cache_key(func_name: str, source_code: str) -> str:
 
 # ── Module-level cache instances ──────────────────────────────────
 
-# One cache for full file results — 1 hour TTL
+# One cache for full file results.
+# TTL must be provided when calling set(); no per-instance default TTL is enforced.
 file_cache = InMemoryCache()
 
-# One cache for LLM function summaries — 24 hour TTL
+# One cache for LLM function summaries.
+# TTL must be provided when calling set(); no per-instance default TTL is enforced.
 # Function summaries change less often than full analyses
 llm_cache = InMemoryCache()
