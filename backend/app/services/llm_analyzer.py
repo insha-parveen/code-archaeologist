@@ -9,6 +9,7 @@ from groq import (
     RateLimitError,
     GroqError,
 )
+from app.services.cache import llm_cache, make_function_cache_key
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -89,9 +90,16 @@ def _call_llm(prompt: str, max_tokens: int = 200) -> str:
 
 def analyze_function_intent(func_name: str, source_code: str) -> str:
     """
-    Generate a plain English summary of what a function does.
-    Prompt engineering: be specific about format and length.
+    Generate a plain English summary.
+    Cached — same function code returns instantly on repeat calls.
     """
+    # Check cache first
+    cache_key = make_function_cache_key(func_name, source_code)
+    cached    = llm_cache.get(cache_key)
+    if cached:
+        logger.info("LLM cache hit for function: %s", func_name)
+        return cached
+
     prompt = f"""Analyze this function and write ONE sentence describing its purpose.
 
 Rules:
@@ -106,8 +114,13 @@ Function: {func_name}
 {source_code}
 ```"""
 
-    result = _call_llm(prompt, max_tokens=80)
-    return result if result else f"Analysis unavailable for {func_name}."
+    try:
+        result = _call_llm(prompt, max_tokens=80)
+        # Store in cache — 24 hours TTL
+        llm_cache.set(cache_key, result, ttl_seconds=86400)
+        return result
+    except LLMServiceError:
+        return f"Analysis unavailable for {func_name}."
 
 
 def generate_refactoring_suggestion(
@@ -116,13 +129,18 @@ def generate_refactoring_suggestion(
     wtf_score: int,
     reasons: list[str]
 ) -> str | None:
-    """
-    For high-WTF functions, generate a specific refactoring suggestion.
-    We pass the WTF reasons so the model has context about WHY
-    the code is problematic — produces more targeted suggestions.
-    """
     if wtf_score < 40:
         return None
+
+    # Include wtf_score in cache key — same code with different
+    # score should get different suggestion
+    cache_key = make_function_cache_key(
+        f"{func_name}_refactor_{wtf_score}", source_code
+    )
+    cached = llm_cache.get(cache_key)
+    if cached:
+        logger.info("LLM cache hit for refactoring: %s", func_name)
+        return cached
 
     reasons_text = "\n".join(f"- {r}" for r in reasons)
 
@@ -139,8 +157,12 @@ Function: {func_name}
 Give ONE specific refactoring suggestion in 2 sentences maximum.
 Be direct. Name the exact change to make. No preamble."""
 
-    result = _call_llm(prompt, max_tokens=120)
-    return result
+    try:
+        result = _call_llm(prompt, max_tokens=120)
+        llm_cache.set(cache_key, result, ttl_seconds=86400)
+        return result
+    except LLMServiceError:
+        return f"Refactoring suggestion unavailable for {func_name}."
 
 
 def generate_code_story(
@@ -182,7 +204,10 @@ Write like a detective describing a crime scene — specific, dramatic, insightf
 Synthesize the metrics into a story. Do NOT list the numbers back.
 3 sentences maximum."""
 
-    return _call_llm(prompt, max_tokens=200)
+    try:
+        return _call_llm(prompt, max_tokens=200)
+    except LLMServiceError:
+        return f"Code story unavailable for {filename}."
 
 
 def analyze_all_functions(
