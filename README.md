@@ -1,18 +1,14 @@
-<div align="center">
-
 # 🕵️ Code Archaeologist
 
-**Excavate the mysteries buried in your codebase.**
+> Excavate the mysteries buried in your codebase.
 
-A developer productivity tool that analyzes legacy and messy codebases — surfacing dead code, complexity hotspots, and a narrative story of how the code evolved.
+Code Archaeologist is a full-stack AI-powered developer productivity tool that analyzes legacy or messy codebases and surfaces hidden insights — dead code, complexity hotspots, LLM-generated function summaries, refactoring suggestions, and a narrative story of how the code evolved.
 
-[![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688?style=flat-square&logo=fastapi)](https://fastapi.tiangolo.com/)
-[![React](https://img.shields.io/badge/Frontend-React%2018-61DAFB?style=flat-square&logo=react)](https://reactjs.org/)
-[![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=flat-square&logo=python)](https://python.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
-[![Status](https://img.shields.io/badge/Status-Active%20Development-brightgreen?style=flat-square)]()
-
-</div>
+![Python](https://img.shields.io/badge/Python-3.11+-blue)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.111-green)
+![React](https://img.shields.io/badge/React-18-blue)
+![Groq](https://img.shields.io/badge/LLM-Groq%20%2F%20Llama%203.1-orange)
+![License](https://img.shields.io/badge/License-MIT-yellow)
 
 ---
 
@@ -28,15 +24,15 @@ Code Archaeologist is a full-stack tool that does the detective work for you. Up
 - A **visual heatmap** of complexity across your entire codebase
 - A **narrative timeline** of how the code evolved — panic commits and all
 
-> *Built with curiosity, caffeine, and a deep respect for cursed legacy code.*
-
----
-
 ## ✨ Features
 
 ### 🦕 Fossil Detector
 
-Identifies dead code artifacts left behind over time — functions declared but never called, variables assigned but never used, commented-out blocks, and unreachable branches.
+Identifies dead code artifacts using AST analysis:
+
+- Functions defined but never called
+- Variables assigned but never read
+- Commented-out code blocks left behind
 
 ### 😵 WTF Score
 
@@ -51,72 +47,58 @@ A **"Top 5 Most Cursed Functions"** leaderboard is generated per upload.
 
 ### 🧠 Intent Analyzer
 
-Uses NLP to infer what a developer *meant* to write — even when the code is unclear. Powered by `Salesforce/codet5-base-codsum`.
+LLM-powered plain English summaries for every function:
 
-```
-calc_x(a, b)  →  "Appears to be an incomplete price discount calculator"
-```
-
-### 🗺️ Complexity Heatmap
-
-Color-coded from 🟢 green (clean) to 🔴 red (complex). Drill into any file or function with animated reveal via Framer Motion.
+- Uses Groq API (Llama 3.1 8B) for real semantic understanding
+- Generates targeted refactoring suggestions for high-WTF functions
+- Cached — same function analyzed once, reused forever
 
 ### 📜 Code Story Timeline
 
-Reconstructs the "chapters" of your codebase's development from comments, naming patterns, and logic flow. Detects signs of panic-driven development — e.g., files named `fix_FINAL_v2_REAL.py`.
+Generates a narrative of the codebase's evolution:
+
+- LLM-written prose describing development history
+- Pattern-based chapter detection (panic mode, early exploration, maturity)
+- Development style classification
+
+### 🌐 Multi-Language Support
+
+- **Python** — full AST parsing, precise fossil detection
+- **JavaScript / TypeScript / JSX / TSX** — LLM-based parsing
+- **Java, Go, Rust, C++, C#, Ruby, PHP, Kotlin, Swift** — universal LLM parser with regex fallback
+
+### 🐙 GitHub Integration
+
+- Paste any GitHub file URL → instant analysis
+- Paste a repo URL → scan up to 20 files, browse results
+- Handles rate limits, retries, branch resolution automatically
+
+### ⚡ Smart Caching
+
+- File-level cache (1hr TTL) — same file analyzed once
+- Function-level LLM cache (24hr TTL) — reuses summaries across files
+- Cache hit rate monitoring via `/api/cache/stats`
+
+### 📄 PDF Export
+
+- One-click export of full analysis report
+- Programmatically generated — works across all browsers and OS
 
 ---
 
 ## 🛠️ Tech Stack
 
-| Layer                   | Technology                            | Why                                     |
-| ----------------------- | ------------------------------------- | --------------------------------------- |
-| **Frontend**      | React 18, Tailwind CSS, Framer Motion | Fast, modern                            |
-| **Backend**       | FastAPI (Python 3.11+)                | Async-ready, auto-docs at `/docs`     |
-| **Code Parsing**  | Python `ast`, `tree-sitter`       | Native AST access without dependencies  |
-| **NLP**           | HuggingFace Transformers, spaCy       | Pretrained models, no training required |
-| **Metrics**       | `radon`                             | Industry-standard cyclomatic complexity |
-| **Visualization** | Recharts, D3.js                       | Flexible charting for heatmaps          |
-| **Testing**       | Pytest (backend), Vitest (frontend)   | Standard in production codebases        |
-
----
-
-## 📁 Project Structure
-
-```
-code-archaeologist/
-│
-├── backend/
-│   ├── app/
-│   │   ├── main.py                  ← FastAPI app entry point + CORS
-│   │   ├── routers/
-│   │   │   ├── upload.py            ← POST /api/upload
-│   │   │   └── analysis.py          ← GET /api/analysis/{session_id}
-│   │   ├── services/
-│   │   │   ├── fossil_detector.py   ← Dead code detection via AST
-│   │   │   ├── wtf_scorer.py        ← WTF Score heuristics + radon
-│   │   │   ├── intent_analyzer.py   ← HuggingFace code summarization
-│   │   │   └── story_generator.py   ← Narrative generation from metadata
-│   │   └── models/
-│   │       └── schemas.py           ← Pydantic request/response models
-│   └── requirements.txt
-│
-├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── FossilDetector.jsx
-│   │   │   ├── WTFLeaderboard.jsx
-│   │   │   ├── ComplexityHeatmap.jsx
-│   │   │   ├── CodeStoryTimeline.jsx
-│   │   │   └── IntentAnalyzer.jsx
-│   │   ├── pages/
-│   │   │   ├── Home.jsx
-│   │   │   └── Dashboard.jsx
-│   │   └── App.jsx
-│   └── package.json
-│
-└── README.md
-```
+| Layer             | Technology                                 |
+| ----------------- | ------------------------------------------ |
+| Frontend          | React 18, Tailwind CSS v4, Vite            |
+| Backend           | FastAPI (Python 3.11+)                     |
+| Python Parsing    | Python `ast` module                      |
+| Universal Parsing | Groq API (Llama 3.1 8B)                    |
+| Metrics           | `radon`                                  |
+| LLM Provider      | Groq (free tier, 14,400 req/day)           |
+| GitHub Fetch      | `httpx` with retry + backoff             |
+| PDF Export        | `jsPDF`                                  |
+| Caching           | In-memory with TTL (Redis-ready interface) |
 
 ---
 
@@ -124,12 +106,10 @@ code-archaeologist/
 
 ### Prerequisites
 
-| Tool    | Version |
-| ------- | ------- |
-| Python  | 3.11+   |
-| Node.js | 18+     |
-| pip     | latest  |
-| git     | any     |
+- Python 3.11+
+- Node.js 18+
+- Groq API key (free at [console.groq.com](https://console.groq.com))
+- GitHub token (optional, increases rate limits)
 
 ### 1. Clone the Repository
 
@@ -138,111 +118,135 @@ git clone https://github.com/insha-parveen/code-archaeologist.git
 cd code-archaeologist
 ```
 
-### 2. Backend Setup
+### Backend Setup
 
 ```bash
-cd backend
+git clone https://github.com/YOUR_USERNAME/code-archaeologist.git
+cd code-archaeologist/backend
 
-# Create and activate virtual environment
 python -m venv venv
 source venv/bin/activate        # Windows: venv\Scripts\activate
 
-# Install dependencies
 pip install -r requirements.txt
+```
 
-# Start the server
+Create `backend/.env`:
+
+```
+GROQ_API_KEY=gsk_your_key_here
+GITHUB_TOKEN=ghp_your_token_here   # optional
+```
+
+Start the server:
+
+```bash
 uvicorn app.main:app --reload --port 8000
 ```
 
-✅ API running at: `http://localhost:8000`
-📚 Interactive API docs at: `http://localhost:8000/docs`
+API docs at `http://localhost:8000/docs`
 
-### 3. Frontend Setup
+### Frontend Setup
 
 ```bash
-# In a new terminal tab
-cd frontend
-
+cd ../frontend
 npm install
+```
+
+Create `frontend/.env`:
+
+```
+VITE_API_BASE=http://127.0.0.1:8000
+```
+
+Start the dev server:
+
+```bash
 npm run dev
 ```
 
-✅ App running at: `http://localhost:5173`
+App available at `http://localhost:5173`
 
 ---
 
 ## 📡 API Reference
 
-| Endpoint                                   | Method   | Description                        |
-| ------------------------------------------ | -------- | ---------------------------------- |
-| `/`                                      | `GET`  | Health check                       |
-| `/api/upload`                            | `POST` | Upload one or more `.py` files   |
-| `/api/analysis/{session_id}`             | `GET`  | Full analysis report for a session |
-| `/api/analysis/{session_id}/leaderboard` | `GET`  | Top 5 Most Cursed Functions        |
+| Endpoint               | Method | Description                          |
+| ---------------------- | ------ | ------------------------------------ |
+| `/api/upload`        | POST   | Upload a code file for full analysis |
+| `/api/github`        | POST   | Analyze from a GitHub URL            |
+| `/api/analysis/full` | POST   | Analyze source code sent as JSON     |
+| `/api/cache/stats`   | GET    | View cache hit rates                 |
+| `/api/cache/clear`   | DELETE | Clear all caches                     |
 
 ---
 
-## 🧪 NLP Pipeline
+## 🏗️ Project Structure
 
 ```
-  Uploaded .py Files
-         │
-         ▼
-  AST / Tree-sitter Parsing
-         │
-         ├──► Fossil Detection    →  static analysis (unused vars, dead code)
-         ├──► WTF Scoring         →  radon + heuristics (nesting, magic numbers)
-         ├──► Intent Inference    →  HuggingFace codet5 (plain-English summaries)
-         └──► Story Generation    →  narrative from metadata + naming patterns
-                   │
-                   ▼
-         JSON Response  →  React Dashboard
+code-archaeologist/
+├── backend/
+│   ├── app/
+│   │   ├── main.py                    # FastAPI entry point + CORS
+│   │   ├── routers/
+│   │   │   ├── upload.py              # File upload endpoint
+│   │   │   ├── analysis.py            # Analysis + cache endpoints
+│   │   │   └── github.py              # GitHub URL endpoint
+│   │   └── services/
+│   │       ├── ast_parser.py          # Python AST traversal
+│   │       ├── wtf_scorer.py          # Complexity heuristics
+│   │       ├── fossil_detector.py     # Dead code detection (Python)
+│   │       ├── universal_parser.py    # LLM-based multi-language parser
+│   │       ├── language_detector.py   # File extension → language mapping
+│   │       ├── llm_analyzer.py        # Groq API — summaries + refactoring
+│   │       ├── story_generator.py     # Narrative timeline generation
+│   │       ├── github_fetcher.py      # GitHub API + raw content fetcher
+│   │       └── cache.py               # In-memory cache with TTL
+│   └── requirements.txt
+│
+└── frontend/
+    └── src/
+        ├── pages/
+        │   ├── Home.jsx               # Upload + GitHub URL input
+        │   ├── Dashboard.jsx          # Single file results
+        │   └── MultiResults.jsx       # Multi-file repo results
+        ├── components/
+        │   ├── WTFLeaderboard.jsx     # Top cursed functions panel
+        │   ├── FossilDetector.jsx     # Dead code panel
+        │   ├── CodeStoryTimeline.jsx  # Story chapters timeline
+        │   ├── ExportButton.jsx       # PDF export trigger
+        │   └── GalaxyBackground.jsx   # Animated canvas background
+        ├── hooks/
+        │   └── useExportPDF.js        # jsPDF programmatic export
+        └── config.js                  # API base URL configuration
 ```
-
-**Key models & libraries:**
-
-| Tool                              | Purpose                                        |
-| --------------------------------- | ---------------------------------------------- |
-| `Salesforce/codet5-base-codsum` | Code summarization for intent analysis         |
-| `radon`                         | Cyclomatic complexity + maintainability index  |
-| `spaCy`                         | Entity extraction from comments and docstrings |
-| Python `ast`                    | Native abstract syntax tree parsing            |
 
 ---
 
-## 🤝 Contributing
+## 🧠 Architecture Decisions
 
-Contributions are welcome! Please open an issue first to discuss what you'd like to change.
+**Why Groq instead of local models?**
+Local models (CodeT5, Llama via Ollama) require 4-8GB downloads and are slow on CPU. Groq runs Llama 3.1 on specialized LPU hardware — same model, 10x faster, free tier sufficient for a portfolio project.
 
-```bash
-# Fork the repo, then:
-git checkout -b feature/your-feature-name
-git commit -m "feat: describe your change"
-git push origin feature/your-feature-name
-# Open a Pull Request
-```
+**Why AST for Python but LLM for other languages?**
+Python's built-in `ast` module is precise, fast, and free. For other languages, language-specific parsers (tree-sitter) have version conflicts across platforms. LLM-based parsing is universal, zero-dependency, and handles any language automatically.
 
-Please follow [Conventional Commits](https://www.conventionalcommits.org/) for commit messages:
+**Why in-memory cache instead of Redis?**
+Redis requires a separate service to run. The cache is built with a Redis-compatible interface — swapping to Redis in production requires changing two lines. This keeps the dev setup simple without sacrificing the architecture.
 
-| Prefix        | When to use                             |
-| ------------- | --------------------------------------- |
-| `feat:`     | New feature                             |
-| `fix:`      | Bug fix                                 |
-| `chore:`    | Setup, config, tooling                  |
-| `docs:`     | Documentation only                      |
-| `refactor:` | Code restructuring, no behaviour change |
+**Why jsPDF instead of html2canvas?**
+Tailwind v4 uses oklch() color space which html2canvas cannot parse. Programmatic PDF generation via jsPDF avoids the dependency entirely and produces cleaner output.
 
 ---
+
 
 ## 📄 License
 
-MIT License — see [LICENSE](LICENSE) for details.
+MIT License. See `LICENSE` for details.
 
 ---
 
-<div align="center">
+*Built with curiosity, caffeine, and a deep respect for cursed legacy code.*
 
-**Built by** [Insha Parveen](https://github.com/insha-parveen)
+
+**By** [Insha Parveen](https://github.com/insha-parveen)
 *If this helped you, leave a ⭐ — it means a lot.*
-
-</div>
